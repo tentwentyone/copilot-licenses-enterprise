@@ -141,6 +141,8 @@ class CopilotLicenseRetriever {
             plan_type: seat.plan_type,
             last_activity_at: seat.last_activity_at,
             last_activity_editor: seat.last_activity_editor,
+            created_at: seat.created_at,
+            updated_at: seat.updated_at,
             assigning_team: seat.assigning_team ? {
                 name: seat.assigning_team.name
             } : null,
@@ -168,27 +170,35 @@ async function saveToFile(data, filename, formatType = 'json') {
             // Flatten the data for CSV output
             const flattenedSeats = seats.map(seat => {
                 const flattened = {};
-                
+
                 for (const [key, value] of Object.entries(seat)) {
                     if (key === 'assignee' && value && typeof value === 'object') {
                         // Extract only the login from assignee
-                        flattened.assignee_login = value.login || '';
-                    } else if (key === 'organization' && value && typeof value === 'object') {
-                        // Extract only the login from organization
-                        flattened.organization_login = value.login || '';
+                        flattened.User = value.login || '';
+                    } else if (key === 'pending_cancellation_date') {
+                        flattened['Pending Cancellation Date'] = value || '';
+                    } else if (key === 'last_activity_at') {
+                        flattened['Last Activity At'] = value || '';
+                    } else if (key === 'last_activity_editor') {
+                        flattened['Last Activity Editor'] = value || '';
                     } else if (key === 'assigning_team' && value && typeof value === 'object') {
                         // Extract only team name (no description)
-                        flattened.assigning_team_name = value.name || '';
+                        flattened.Team = value.name || '';
                     } else if (key === 'assigning_team' && value === null) {
                         // Handle null assigning_team
-                        flattened.assigning_team_name = '';
-                    } else if (!['assignee', 'organization', 'assigning_team'].includes(key) && 
-                              (typeof value !== 'object' || value === null)) {
-                        // Keep simple values as-is (including null values)
-                        flattened[key] = value;
+                        flattened.Team = '';
+                    } else if (key === 'plan_type') {
+                        flattened['Plan Type'] = value || '';
+                    } else if (key === 'organization' && value && typeof value === 'object') {
+                        // Extract only the login from organization
+                        flattened.Organization = value.login || '';
+                    } else if (key === 'created_at') {
+                        flattened['Created At'] = value || '';
+                    } else if (key === 'updated_at') {
+                        flattened['Updated At'] = value || '';
                     }
                 }
-                
+
                 return flattened;
             });
 
